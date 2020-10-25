@@ -1,6 +1,6 @@
+# pylint: disable=too-many-instance-attributes
 class Foo:
 
-    # pylint: disable=too-many-arguments
     def __init__(self, a, b, c, d, e, f, g, h):
         self.a = a
         self.b = b
@@ -10,10 +10,8 @@ class Foo:
         self.f = f
         self.g = g
         self.h = h
-        # pylint: enable=too-many-arguments
 
 
-    # pylint: disable=too-many-arguments
     def modify(self, a, b, c, d, e, f):
         self.a = a
         self.b = b
@@ -21,10 +19,9 @@ class Foo:
         self.d = d
         self.e = e
         self.f = f
-        # pylint: enable=too-many-arguments
+    # pylint: enable=too-many-instance-attributes
 
 
-# pylint: disable=too-many-arguments
 def modify(foo, a, b, c, d, e, f):
     foo.a = a
     foo.b = b
@@ -32,4 +29,3 @@ def modify(foo, a, b, c, d, e, f):
     foo.d = d
     foo.e = e
     foo.f = f
-    # pylint: enable=too-many-arguments
