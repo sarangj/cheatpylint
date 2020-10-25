@@ -1,12 +1,15 @@
 class Foo:
 
-    def __init__(self, a, b, c, d, e, f):
+    def __init__(self, a, b, c, d, e, f, g, h):
         self.a = a
         self.b = b
         self.c = c
         self.d = d
         self.e = e
         self.f = f
+        self.g = g
+        self.h = h
+
 
     def modify(self, a, b, c, d, e, f):
         self.a = a
