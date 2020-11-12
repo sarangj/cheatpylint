@@ -28,6 +28,8 @@ def run_annotater(lint_arg: str, src_file_arg: str):
         transformer = DisableTooManyArgs(lints)
     elif lint_arg == 'too-many-instance-attributes':
         transformer = DisableTooManyInstanceAttributes(lints)
+    elif lint_arg == 'too-many-locals':
+        transformer = DisableTooManyLocals(lints)
     else:
         raise ValueError
 
@@ -156,5 +158,54 @@ class DisableTooManyInstanceAttributes(libcst.CSTTransformer):
         return updated_node
 
 
+class DisableTooManyLocals(libcst.CSTTransformer):
+
+    def __init__(self, lints: typing.Iterable[Lint]):
+        self.functions = set(
+            lint.obj for lint in lints
+            if lint.symbol == 'too-many-locals'
+        )
+        self.class_stack: typing.List[str] = []
+
+    def visit_ClassDef(self, node: libcst.ClassDef) -> typing.Optional[bool]:
+        self.class_stack.append(node.name.value)
+
+    def leave_ClassDef(
+        self,
+        original_node: libcst.ClassDef,
+        updated_node: libcst.ClassDef,
+    ) -> libcst.CSTNode:
+        self.class_stack.pop()
+        return updated_node
+
+    def leave_FunctionDef(
+        self,
+        original_node: libcst.FunctionDef,
+        updated_node: libcst.FunctionDef,
+    ) -> libcst.CSTNode:
+        full_name = (
+            f'{self.class_stack[0]}.{original_node.name.value}'
+            if self.class_stack
+            else original_node.name.value
+        )
+        if full_name in self.functions:
+            return updated_node.with_changes(
+                lines_after_decorators=[
+                    *original_node.lines_after_decorators,
+                    libcst.EmptyLine(
+                        comment=libcst.Comment('# pylint: disable=too-many-locals'),
+                    ),
+                ],
+                body=original_node.body.with_changes(
+                    body=[
+                        *original_node.body.body,
+                        libcst.EmptyLine(
+                            comment=libcst.Comment('# pylint: enable=too-many-locals'),
+                        ),
+                    ],
+                ),
+            )
+
+        return updated_node
 if __name__ == '__main__':
     main()

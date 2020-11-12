@@ -53,3 +53,27 @@ class Foo:
         # pylint: enable=too-many-arguments
     # pylint: enable=too-many-instance-attributes
     """
+
+
+def test_disable_too_many_locals(tmp_path):
+    src_file = tmp_path / 'src.py'
+    src_file.write_text("""
+def foo():
+    a = b = c = d = f = g = h = i = j = k = l = m = None
+    n = None
+    o = None
+    p = None
+    q = None
+    """,
+    )
+    annotate.run_annotater('too-many-locals', str(src_file))
+    assert src_file.read_text() == """
+# pylint: disable=too-many-locals
+def foo():
+    a = b = c = d = f = g = h = i = j = k = l = m = None
+    n = None
+    o = None
+    p = None
+    q = None
+    # pylint: enable=too-many-locals
+    """
