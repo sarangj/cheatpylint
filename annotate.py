@@ -10,27 +10,34 @@ import pylint.epylint
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--l', dest='lint', required=True)
-    lint = parser.parse_args().lint
+    parser.add_argument('--f', dest='src_file', required=True)
+    run_annotater(parser.lint, parser.src_file)
+
+
+def run_annotater(lint_arg: str, src_file_arg: str):
     pylint_stdout, pylint_stderr = pylint.epylint.py_run(
-        command_options='example.py --output-format=json',
+        command_options=(
+            f'{src_file_arg} '
+            f'--disable=all --enable {lint_arg} '
+            '--output-format=json'
+        ),
         return_std=True,
     )
     lints = [Lint.from_dict(d) for d in json.load(pylint_stdout)]
-    if lint == 'too-many-arguments':
+    if lint_arg == 'too-many-arguments':
         transformer = DisableTooManyArgs(lints)
-    elif lint == 'too-many-instance-attributes':
+    elif lint_arg == 'too-many-instance-attributes':
         transformer = DisableTooManyInstanceAttributes(lints)
     else:
         raise ValueError
 
-    with open('example.py', 'r') as f:
+    with open(src_file_arg, 'r') as f:
         src = f.read()
 
     src_tree = libcst.parse_module(src)
-
     modified_tree = src_tree.visit(transformer)
 
-    with open('modified.py', 'w') as f:
+    with open(src_file_arg, 'w') as f:
         f.write(modified_tree.code)
 
 
