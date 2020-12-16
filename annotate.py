@@ -12,7 +12,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--l', dest='lint', required=True)
     parser.add_argument('--f', dest='src_file', required=True)
-    run_annotater(parser.lint, parser.src_file)
+    args = parser.parse_args()
+    run_annotater(args.lint, args.src_file)
 
 
 def run_annotater(lint_arg: str, src_file_arg: str):
